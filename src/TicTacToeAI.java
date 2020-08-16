@@ -181,10 +181,10 @@ public class TicTacToeAI {
         // Check to see if the previous move was a win or not
         if(playerWin) {
             // If the player wins, set value negative
-            return nodeDepth * -1;
+            return -10;
         } else if(aiWin) {
             // If we (The AI) win, set value positive
-            return nodeDepth;
+            return 10;
         }
 
         // When nobody wins and it is a draw
@@ -458,7 +458,9 @@ public class TicTacToeAI {
     private static void intro() {
         System.out.println("---------------------------------------------");
         System.out.println("Welcome to the game of Tic Tac Toe");
+        System.out.println("You are playing vs a Minimax AI");
         System.out.println("The current board size is set to " + BOARD_SIZE);
+        System.out.println("Good luck!");
         System.out.println("---------------------------------------------");
         System.out.println();
     }
