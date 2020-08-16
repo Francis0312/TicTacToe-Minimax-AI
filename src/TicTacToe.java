@@ -6,7 +6,6 @@ import java.util.Scanner;
  * @author Francisco Reyna 
  * email: francis@cs.utexas.edu
  * University of Texas at Austin
- * 
  */
 
 

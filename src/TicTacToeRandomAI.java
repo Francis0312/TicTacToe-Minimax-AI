@@ -50,7 +50,7 @@ public class TicTacToeRandomAI {
         System.out.println();
         //Setting the 2nd player name to an AI.
         names[1] = AI_NAME;
-
+        // Returns the packaged names within an array
         return names;
     }
 

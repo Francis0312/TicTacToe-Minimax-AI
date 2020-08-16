@@ -21,19 +21,20 @@ public class TicTacToeAI {
     private final static int BOARD_SIZE = 3;
     private final static char EMPTY = '.';
     private final static char  PLAYER_ONE_PIECE = 'X';
-    private final static char PLAYER_TWO_PIECE = 'O';
+    private final static char AI_PIECE = 'O';
     private final static int PIECES_FOR_WIN = 3;
     private final static String AI_NAME = "Computer";
+    private final static char ANNOUNCEMENT_CHAR = '-';
 
     //Plays a game of TicTacToe 
     public static void main(String[] args) throws Exception {
         char[][] board = new char[BOARD_SIZE][BOARD_SIZE];
         Scanner keyboard = new Scanner(System.in);
         intro();
-        String[] names = getPlayerNames(keyboard);
         fillBoard(board);
         printBoard(board);
-        runGame(board, keyboard, names);
+        String name = getPlayerName(keyboard);
+        runGame(board, keyboard, name);
     }
 
 
@@ -42,16 +43,14 @@ public class TicTacToeAI {
      * @param keyboard Scanner used to read user input
      * @return A String array containing the two names of the players
      */
-    private static String[] getPlayerNames(Scanner keyboard) {
-        String[] names = new String[2];
+    private static String getPlayerName(Scanner keyboard) {
         //Asks the user for a name
+        String name = "";
         System.out.print("Please enter a name for the human player: ");
-        names[0] = keyboard.nextLine();
+        name = keyboard.nextLine();
         System.out.println();
-        //Setting the 2nd player name to an AI.
-        names[1] = AI_NAME;
 
-        return names;
+        return name;
     }
 
 
@@ -60,11 +59,9 @@ public class TicTacToeAI {
      * @param board 2D Array containing the pieces
      * @param keyboard Scanner used to read user input
      */
-    private static void runGame(char[][] board, Scanner keyboard, String[] names) throws Exception {
+    private static void runGame(char[][] board, Scanner keyboard, String playerName) throws Exception {
         //Variables
         boolean someoneHasWon = false; 
-        String player1 = names[0];
-        String player2 = names[1];
         String winner = null;
         int maxTurns = board.length * board[0].length;
         int currentTurn = 0;
@@ -72,43 +69,28 @@ public class TicTacToeAI {
         //Main game turn by turn
         while(!someoneHasWon && (currentTurn < maxTurns)) {
             //Player 1's turn
-            doPlayerTurn(keyboard, board, names, true);
+            doPlayerTurn(keyboard, board, playerName);
             printBoard(board);
             currentTurn++;
             //Check if P1 has won
             someoneHasWon = checkIfVictory(board, true);
             //Player 1 wins
             if(someoneHasWon) {
-                winner = player1;
+                winner = playerName;
             }
             //Player 2's turn if P1 hasn't won
             if(!someoneHasWon && (currentTurn < maxTurns)) {
-                doComputerTurn(board, names);
+                doComputerTurn(board);
                 printBoard(board);
                 someoneHasWon = checkIfVictory(board, false);
                 currentTurn++;
                 //Player 2 wins
                 if(someoneHasWon) {
-                    winner = player2;
+                    winner = AI_NAME;
                 }
             }
         }
         printResults(someoneHasWon, winner, board);
-    }
-
-
-    /**
-     * Does the turn of a computer, currently according to a random spot algorithm
-     * @param board 2D Array containing the game board's pieces
-     * @param names Used to get the computer's name
-     * @throws Exception Exception in case the received coordinates are incorrect
-     */
-    private static void doComputerTurn(char[][] board, String[] names) throws Exception {
-        String name = names[1];
-        placePiece(board, getRandomSpot(board, new Random()), false);
-        System.out.println("--------------------------");
-        System.out.println(name + " has made its turn");
-        System.out.println("--------------------------");   
     }
 
 
@@ -133,7 +115,7 @@ public class TicTacToeAI {
             }
         }
         if(unfilledX.size() != unfilledY.size()) {
-            throw new Exception("--ERROR: Coordinate arrays are not of same size--");
+            throw new Exception("--- ERROR: Coordinate arrays are not of same size ---");
         } 
         int whichCoord = rand.nextInt(unfilledX.size());
         return new int[] {unfilledY.get(whichCoord), unfilledX.get(whichCoord)};
@@ -141,44 +123,134 @@ public class TicTacToeAI {
 
 
     /**
-     * Gets the x and y coordinates of the unfilled spots within the board.
-     * @param board The char 2D array which holds the game pieces.
-     * @return A size 2 List of ArrayLists, one for each respective coordinate.
+     * Does the turn of a computer, currently according to a random spot algorithm
+     * @param board 2D Array containing the game board's pieces
+     * @param names Used to get the computer's name
+     * @throws Exception Exception in case the received coordinates are incorrect
      */
-    private static List<ArrayList<Integer>> getUnfilledSpots(char[][] board) {
-        ArrayList<Integer> unfilledX = new ArrayList<Integer>();
-        ArrayList<Integer> unfilledY = new ArrayList<Integer>();
-
-        //Gets all the empty spots in the board and adds them to the list.
-        for(int i = 0; i < board.length; i++) {
-            for(int j = 0; j < board.length; j++) {
-                if(board[i][j] == EMPTY) {
-                    unfilledX.add(i);
-                    unfilledY.add(j);
-                }
-            }
+    private static void doComputerTurn(char[][] board) throws Exception {
+        if(getNumEmptySquares(board) == board.length * board[0].length - 1) {
+            placePiece(board, getRandomSpot(board, new Random()), false);
+        } else {
+            placePiece(board, doMiniMaxTurn(board), false);
         }
-        if(unfilledX.size() != unfilledY.size()) {
-            throw new Exception("--ERROR: Coordinate arrays are not of same size--");
-        } 
-        List<ArrayList<Integer>> coordinates = new List<ArrayList<Integer>>(2);
-        return coordinates;
-
+        printAnnouncement(AI_NAME + " has made its turn"); 
     }
     
 
-    private static int[] getMinimaxSpot() {
+    /**
+     * Performs the minimax algorithm on every possible state of the board
+     * @param board The 2D Array that holds the pieces
+     * @return A two-integer coordinate array of the best possible move the AI can make
+     */
+    private static int[] doMiniMaxTurn(char[][] board) {
+        int bestScore = -Integer.MAX_VALUE;
+        int[] move = new int[2];
 
+        // Loop through until encounter an empty square
+        for(int i = 0; i < board.length; i++) {
+            for(int j = 0; j < board[0].length; j++) {
+                if(board[i][j] == EMPTY) {
+                    board[i][j] = AI_PIECE;
+                    int score = minimax(board, 0, false);
+                    board[i][j] = EMPTY;
+                    if(score > bestScore) {
+                        bestScore = score;
+                        move[0] = j;
+                        move[1] = i;
+                    }
+                }
+            }
+        }
+        return move;
+    }
+
+
+    /**
+     * Recursive function that maximizes the AI's score and minimizes the human's score every run
+     * @param board The 2D Array that holds the pieces
+     * @param nodeDepth The depth at which the current run is at. 
+     * @param isMaximizing Whether or not the current iteration is maximizing
+     * @return The "score" of a recursive run at a given state of the board
+     * 1 -> A positive win, -1 -> a loss (Human Win), and 0 -> a draw
+     */
+    private static int minimax(char[][] board, int nodeDepth, boolean isMaximizing) {
+        boolean playerWin = checkIfVictory(board, true);
+        boolean aiWin = checkIfVictory(board, false);
+
+        // Check to see if the previous move was a win or not
+        if(playerWin) {
+            // If the player wins, set value negative
+            return nodeDepth * -1;
+        } else if(aiWin) {
+            // If we (The AI) win, set value positive
+            return nodeDepth;
+        }
+
+        // When nobody wins and it is a draw
+        if(checkIfFull(board)) {
+            return 0;
+        }
+
+        // Do the algorithm
+        if(isMaximizing) {
+            // Maximimizing the score for our AI
+            int bestScore = -Integer.MAX_VALUE;
+            for(int i = 0; i < board.length; i++) {
+                for(int j = 0; j < board[0].length; j++) {
+                    if(board[i][j] == EMPTY) {
+                        board[i][j] = AI_PIECE;
+                        int score = minimax(board, nodeDepth + 1, false);
+                        board[i][j] = EMPTY;
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+            }
+            return bestScore;
+        } else {
+            // Minimizing the score for the human player
+            int bestScore = Integer.MAX_VALUE;
+            for(int i = 0; i < board.length; i++) {
+                for(int j = 0; j < board[0].length; j++) {
+                    // Is the spot available?
+                    if(board[i][j] == EMPTY) {
+                        board[i][j] = PLAYER_ONE_PIECE;
+                        int score = minimax(board, nodeDepth + 1, true);
+                        board[i][j] = EMPTY;
+                        bestScore = Math.min(score, bestScore); 
+                    }
+                }
+            }
+            return bestScore;
+        }
+    }
+
+
+    /**
+     * Counts the amount of empty spots within the board
+     * @param board The 2D Array which hosts the game pieces
+     * @return The number of empty spots in the board
+     */
+    private static int getNumEmptySquares(char[][] board) {
+        int count = 0;
+        for(int i = 0; i < board.length; i++) {
+            for(int j = 0; j < board[0].length; j++) {
+                if(board[i][j] == EMPTY) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     /**
      * Prints the results at the end of a match
-     * @param someoneHasWon Whether the game is a draw or win
+     * @param notDraw Whether the game is a draw or win
      * @param winner Whoever the winner is
      * @param board 2D Array that contains the pieces of the board
      */
-    private static void printResults(boolean someoneHasWon, String winner, char[][] board) {
-        if(someoneHasWon) {
+    private static void printResults(boolean notDraw, String winner, char[][] board) {
+        if(notDraw) {
             System.out.println("----------------");
             System.out.println(winner + " wins!");
             System.out.println("----------------");
@@ -198,17 +270,10 @@ public class TicTacToeAI {
      * @param names Size 2 array of the two player's names
      * @param isPlayerOne Used to decide which player's turn should be done
      */
-    private static void doPlayerTurn(Scanner keyboard, char[][] board, String[] names, 
-        boolean isPlayerOne) {
-        String name;
-        if(isPlayerOne) {
-            name = names[0];
-        } else {
-            name = names[1];
-        }
-        System.out.println(name + ", it is your turn.");
-        int[] coordinates = getPlayerChoice(board, keyboard, isPlayerOne);
-        placePiece(board, coordinates, isPlayerOne);
+    private static void doPlayerTurn(Scanner keyboard, char[][] board, String playerName) {
+        System.out.println(playerName + ", it is your turn.");
+        int[] coordinates = getPlayerChoice(board, keyboard, true);
+        placePiece(board, coordinates, true);
     }
 
 
@@ -223,7 +288,7 @@ public class TicTacToeAI {
         if(isPlayerOne) {
             piece = PLAYER_ONE_PIECE;
         } else {
-            piece = PLAYER_TWO_PIECE;
+            piece = AI_PIECE;
         }
         board[coordinates[1]][coordinates[0]] = piece;
     }
@@ -244,7 +309,7 @@ public class TicTacToeAI {
         if(isPlayerOne) {
             teamPiece = PLAYER_ONE_PIECE;
         } else {
-            teamPiece = PLAYER_TWO_PIECE;
+            teamPiece = AI_PIECE;
         }
 
         //Checks each spot of the board where there is a teamPiece for a victory.
@@ -450,7 +515,7 @@ public class TicTacToeAI {
  
 
     /**
-     * Checks to see if the gameBoard is full
+     * Checks to see if the board is full
      * @param board 2D Array of the board
      * @return Whether or not 2D Array is full
      */
@@ -465,5 +530,28 @@ public class TicTacToeAI {
         }
         //Returns that the board is indeed full if no empty piece was found
         return true;
+    }
+
+
+    /**
+     * Prints the announcement enclosed within two dashed lines
+     * @param announcement The announcement to be printed
+     */
+    private static void printAnnouncement(String announcement) {
+        printDash(announcement.length());
+        System.out.println(announcement);
+        printDash(announcement.length());
+    }
+
+
+    /**
+     * Prints a line of dashes that matches the length of the announcement
+     * @param length The amount of dashes to be printed
+     */
+    private static void printDash(int length) {
+        for(int i = 0; i < length; i++) {
+            System.out.print(ANNOUNCEMENT_CHAR);
+        }
+        System.out.println();
     }
 }
