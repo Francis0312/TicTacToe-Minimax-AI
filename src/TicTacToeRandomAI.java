@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 /**
  * -------------------------------------------------------------------------------------------------
- * An app that plays Tic Tac Toe Between a human player and an AI.
+ * An app that plays Tic Tac Toe Between a human player and a simple AI that chooses random spots
  * -------------------------------------------------------------------------------------------------
  * @author Francisco Reyna 
  * email: francis@cs.utexas.edu
