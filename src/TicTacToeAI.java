@@ -181,10 +181,10 @@ public class TicTacToeAI {
         // Check to see if the previous move was a win or not
         if(playerWin) {
             // If the player wins, set value negative
-            return -10;
+            return -1;
         } else if(aiWin) {
             // If we (The AI) win, set value positive
-            return 10;
+            return 1;
         }
 
         // When nobody wins and it is a draw
@@ -212,7 +212,6 @@ public class TicTacToeAI {
             int bestScore = Integer.MAX_VALUE;
             for(int i = 0; i < board.length; i++) {
                 for(int j = 0; j < board[0].length; j++) {
-                    // Is the spot available?
                     if(board[i][j] == EMPTY) {
                         board[i][j] = PLAYER_ONE_PIECE;
                         int score = minimax(board, nodeDepth + 1, true);
