@@ -452,18 +452,6 @@ public class TicTacToeAI {
     }
 
 
-    //Prints the introduction to the match.
-    private static void intro() {
-        System.out.println("---------------------------------------------");
-        System.out.println("Welcome to the game of Tic Tac Toe");
-        System.out.println("You are playing vs a Minimax AI");
-        System.out.println("The current board size is set to " + BOARD_SIZE);
-        System.out.println("Good luck!");
-        System.out.println("---------------------------------------------");
-        System.out.println();
-    }
-
-
     /**
      * Fills the board with empty pieces.
      * @param board The gameboard array.
@@ -552,6 +540,20 @@ public class TicTacToeAI {
         for(int i = 0; i < length; i++) {
             System.out.print(ANNOUNCEMENT_CHAR);
         }
+        System.out.println();
+    }
+
+
+    //Prints the introduction to the match.
+    private static void intro() {
+        String longestLine = "The current board size is set to " + BOARD_SIZE;
+        // Actual Intro
+        printDash(longestLine.length());
+        System.out.println("Welcome to the game of Tic Tac Toe");
+        System.out.println("You are playing vs a Minimax AI");
+        System.out.println(longestLine);
+        System.out.println("Good luck!");
+        printDash(longestLine.length());
         System.out.println();
     }
 }
