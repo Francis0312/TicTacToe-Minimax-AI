@@ -335,45 +335,45 @@ public class TicTacToeAI {
      * @return Whether or not a victory was found at this piece's directions
      */
     private static boolean checkFourDir(char[][] board, int pieceY, int pieceX, char checkP) {
-        int[] rowDirections = {1, 1, 0, -1};
+        int[] rowDirections = {1, 1, 0, 1};
         int[] colDirections = {0, 1, 1, -1};
 
-        //For loop that checks for a victory in the 4 necessary directions
+        // For loop that checks for a victory in the 4 necessary directions
         for(int rowDir = 0; rowDir < rowDirections.length; rowDir++) {
-            //Starts at 1 because of the piece we are already on and analyzing
+            // Starts at 1 because of the piece we are already on and analyzing
             int count = 1;
             boolean isConsecutive = true;
             //Reset the initial rows and columns for each direction
             int curRow = pieceY;
             int curCol = pieceX;
 
-            //While we need to keep looking for 4 in a row
-            while(checkIfValidBounds(board, curRow) && checkIfValidBounds(board, curCol)
+            // While we need to keep looking for 4 in a row
+            while(isValidBounds(board, curRow) && isValidBounds(board, curCol)
                 && count != PIECES_FOR_WIN && isConsecutive) {
                 int newRow = curRow + rowDirections[rowDir];
                 int newCol = curCol + colDirections[rowDir];
                 //If the new piece is in range, check to see if it's consecutive to the previous one
-                if(checkIfValidBounds(board, newRow) &&
-                    checkIfValidBounds(board, newCol)) {
+                if(isValidBounds(board, newRow) &&
+                    isValidBounds(board, newCol)) {
                     isConsecutive = board[curRow][curCol] == board[newRow][newCol];
                 }
                 curRow += rowDirections[rowDir];
                 curCol += colDirections[rowDir];
                 //If our row and column are within range and the piece there is of the same team,
                 //increment count
-                if(checkIfValidBounds(board, curRow) && checkIfValidBounds(board, curCol)
+                if(isValidBounds(board, curRow) && isValidBounds(board, curCol)
                     && isConsecutive) {
                     if(board[curRow][curCol] == checkP) {
                         count++;
                     }
                 }
-                //If the count = 4, return that the game has been won!
+                //If the count = 3, return that the game has been won!
                 if(count == PIECES_FOR_WIN) {
                     return true;
                 }
             }
         }
-        //Returns false after all 4 directions were checked and not one made count = 4.
+        //Returns false after all 4 directions were checked and not one made count = 3.
         return false;
     }
 
@@ -384,7 +384,7 @@ public class TicTacToeAI {
      * @param num The number which is to be checked
      * @return Whether or not it is in bounds/valid.
      */
-    private static boolean checkIfValidBounds(char[][] board, int num) {
+    private static boolean isValidBounds(char[][] board, int num) {
         return num < board.length && num >= 0;
     }
 
@@ -404,13 +404,13 @@ public class TicTacToeAI {
             System.out.print("Select a column: ");
             x = keyboard.nextInt();
             System.out.println();
-            if(!checkIfValidBounds(board, x - 1)) {
+            if(!isValidBounds(board, x - 1)) {
                 x = whileLoop(keyboard, board, true, x);
             }
             System.out.print("Select a row: ");
             y = keyboard.nextInt(); 
             System.out.println();
-            if(!checkIfValidBounds(board, y - 1)) {
+            if(!isValidBounds(board, y - 1)) {
                 y = whileLoop(keyboard, board, false, y);
             }
             isValidCoords = board[y - 1][x - 1] == EMPTY;
@@ -445,7 +445,7 @@ public class TicTacToeAI {
             System.out.println("That is not a valid " + item + ".");
             System.out.print("Select a " + item + ": ");
             coord = keyboard.nextInt();
-            notValid = !checkIfValidBounds(board, coord - 1);
+            notValid = !isValidBounds(board, coord - 1);
             System.out.println();
         }
         return coord;
